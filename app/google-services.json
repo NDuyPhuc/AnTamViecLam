@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "221272132411",
+    "project_id": "antamvieclam",
+    "storage_bucket": "antamvieclam.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:221272132411:android:c432fab2ad267434c8451e",
+        "android_client_info": {
+          "package_name": "com.example.antamvieclam"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "221272132411-826fghoh93hedghe8598r13fankndh3m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.antamvieclam",
+            "certificate_hash": "d874dcf8d6a76c39867094613e7648c3f4854e1e"
+          }
+        },
+        {
+          "client_id": "221272132411-q7mkd1kiqvln71k4rjvlm2567vloqci9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuyB9Bi3hWhR3JCuaZ4kZPq1NZ8u6-vEs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "221272132411-q7mkd1kiqvln71k4rjvlm2567vloqci9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

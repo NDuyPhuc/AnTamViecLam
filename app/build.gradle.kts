@@ -1,24 +1,44 @@
+// Đảm bảo 2 dòng import này ở đầu file
+import java.util.Properties
+import java.io.FileInputStream
+// ĐOẠN CODE LOGIC MỚI
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+// Đọc 3 giá trị mới
+val cloudName = localProperties.getProperty("CLOUDINARY_CLOUD_NAME") ?: ""
+val apiKey = localProperties.getProperty("CLOUDINARY_API_KEY") ?: ""
+val apiSecret = localProperties.getProperty("CLOUDINARY_API_SECRET") ?: ""
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.kotlin.compose.compiler)
+    alias(libs.plugins.android.secrets.gradle.plugin)
+    id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.example.antamvieclam"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.antamvieclam"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
+
+        // Chỉ giữ lại dòng buildConfigField ở đây
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"$cloudName\"")
+        buildConfigField("String", "CLOUDINARY_API_KEY", "\"$apiKey\"")
+        buildConfigField("String", "CLOUDINARY_API_SECRET", "\"$apiSecret\"")    }
 
     buildTypes {
         release {
@@ -29,32 +49,80 @@ android {
             )
         }
     }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "1.8"
     }
+//    kotlin {
+//        jvmToolchain(17)
+//    }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
+    implementation(libs.androidx.navigation.compose)
+
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.coil.compose)
+
+
+    // Jetpack Compose BoM (Bill of Materials) - Giúp quản lý phiên bản các thư viện Compose
+    val composeBom = platform("androidx.compose:compose-bom:2024.05.00") // Kiểm tra phiên bản mới nhất
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+
+    // Các thư viện Compose cần thiết
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+
+    // Thư viện cần thiết cho setContent
+    implementation("androidx.activity:activity-compose:1.9.0") // Kiểm tra phiên bản mới nhất
+
+
+
+// Phần này của bạn đã đúng, giữ nguyên
+    implementation(libs.cloudinary.android)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.firebase.messaging.ktx)
+    implementation(libs.firebase.crashlytics.ktx)
+    implementation(libs.play.services.auth)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.logging.interceptor)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+ksp {
+    arg("hilt.CorrectErrorTypes", "true")
 }

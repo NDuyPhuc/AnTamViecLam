@@ -8,6 +8,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -32,27 +35,39 @@ fun MainScreen(
     val bottomNavController = rememberNavController()
     val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-
     val homeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
+    // "Cò súng" để kích hoạt việc tải lại dữ liệu
+    var homeScreenReloadTrigger by remember { mutableStateOf(0) }
+
     Scaffold(
-        // GỌN HƠN RẤT NHIỀU: Chỉ cần một lời gọi hàm
         topBar = {
             MainTopAppBar(
                 currentRoute = currentRoute,
                 homeUiState = homeUiState
             )
         },
-        bottomBar = { BottomBar(navController = bottomNavController) },
-        floatingActionButton = {
-            // Logic FAB giữ nguyên, đã rất gọn
-            if (currentRoute == BottomNavItem.Home.route) {
-                if ((homeUiState as? HomeUiState.Success)?.user?.userType == UserType.EMPLOYER) {
-                    FloatingActionButton(
-                        onClick = { rootNavController.navigate(Routes.CREATE_JOB_SCREEN) }
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = "Đăng tin mới")
+        bottomBar = {
+            BottomBar(
+                navController = bottomNavController,
+                onTabReselected = { reselectedScreen ->
+                    // Khi người dùng nhấn lại vào một tab đã được chọn
+                    if (reselectedScreen.route == BottomNavItem.Home.route) {
+                        // Nếu đó là tab Home, tăng giá trị của trigger
+                        homeScreenReloadTrigger++
                     }
+                    // Bạn có thể thêm logic reload cho các màn hình khác ở đây
+                }
+            )
+        },
+        floatingActionButton = {
+            // Chỉ hiển thị FAB khi ở màn hình Home và là Nhà Tuyển Dụng
+            if (currentRoute == BottomNavItem.Home.route &&
+                (homeUiState as? HomeUiState.Success)?.user?.userType == UserType.EMPLOYER) {
+                FloatingActionButton(
+                    onClick = { rootNavController.navigate(Routes.CREATE_JOB_SCREEN) }
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Đăng tin mới")
                 }
             }
         }
@@ -61,35 +76,52 @@ fun MainScreen(
             bottomNavController = bottomNavController,
             onSignOut = onSignOut,
             rootNavController = rootNavController,
-            paddingValues = innerPadding
+            paddingValues = innerPadding,
+            // Truyền trigger xuống NavGraph để nó có thể truyền tiếp vào HomeScreen
+            homeScreenReloadTrigger = homeScreenReloadTrigger
         )
     }
 }
 
-
 @Composable
-fun BottomBar(navController: NavHostController) {
+fun BottomBar(
+    navController: NavHostController,
+    onTabReselected: (BottomNavItem) -> Unit // Callback khi nhấn lại tab đã chọn
+) {
     val screens = listOf(BottomNavItem.Home, BottomNavItem.Management, BottomNavItem.Profile)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
     NavigationBar {
         screens.forEach { screen ->
+            val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
             NavigationBarItem(
-                icon = { Icon(screen.icon, contentDescription = screen.title) },
-                label = { Text(screen.title) },
-                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                selected = isSelected,
                 onClick = {
-                    navController.navigate(screen.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+                    if (isSelected) {
+                        // Nếu tab đã được chọn sẵn, gọi callback onTabReselected
+                        onTabReselected(screen)
+                    } else {
+                        // Nếu là tab mới, điều hướng như bình thường
+                        navController.navigate(screen.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
-                }
+                },
+                icon = {
+                    val icon = if (isSelected) screen.selectedIcon else screen.icon
+                    Icon(icon, contentDescription = screen.title)
+                },
+                label = { Text(screen.title) }
             )
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,19 +129,16 @@ private fun MainTopAppBar(
     currentRoute: String?,
     homeUiState: HomeUiState
 ) {
-    // Logic xác định tiêu đề được đóng gói gọn gàng ở đây
     val title = when (currentRoute) {
-        BottomNavItem.Home.route -> {
+        BottomNavItem.Home.route ->
             (homeUiState as? HomeUiState.Success)?.user?.let { user ->
                 if (user.userType == UserType.EMPLOYER) "Quản Lý Tin Tuyển Dụng" else "Tìm Việc Quanh Đây"
             }
-        }
         BottomNavItem.Management.route -> "Quản Lý"
         BottomNavItem.Profile.route -> "Hồ Sơ Của Tôi"
-        else -> null // Không có tiêu đề cho các màn hình khác
+        else -> null
     }
 
-    // Chỉ hiển thị TopAppBar khi có tiêu đề
     if (title != null) {
         TopAppBar(title = { Text(title) })
     }

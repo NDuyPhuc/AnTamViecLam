@@ -117,6 +117,6 @@ fun com.example.antamvieclam.data.model.PayType.toVietnamese(): String {
     return when (this) {
         com.example.antamvieclam.data.model.PayType.PER_HOUR -> "giờ"
         com.example.antamvieclam.data.model.PayType.PER_DAY -> "ngày"
-        com.example.antamvieclam.data.model.PayType.PER_PACKAGE -> "gói"
+        com.example.antamvieclam.data.model.PayType.PER_PACKAGE -> "tháng"
     }
 }

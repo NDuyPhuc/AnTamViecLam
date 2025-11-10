@@ -16,6 +16,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.antamvieclam.data.model.Job
 import com.example.antamvieclam.ui.auth.AuthViewModel
+import com.example.antamvieclam.ui.home.components.JobItemCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,36 +70,3 @@ fun WorkerHomeScreen(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun JobItemCard(
-    job: Job,
-    onJobClick: (String) -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable { onJobClick(job.id) },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface) // Sử dụng màu nền của theme
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = job.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = job.addressString,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "${job.payRate.toLong()} VNĐ / giờ", // Cần format payType sau
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-    }
-}

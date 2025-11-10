@@ -27,9 +27,9 @@ class JobViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<JobListUiState>(JobListUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    init {
-        loadAllJobs()
-    }
+//    init {
+//        loadAllJobs()
+//    }
 
     // Hàm để tải tất cả công việc cho NLĐ
     fun loadAllJobs() {

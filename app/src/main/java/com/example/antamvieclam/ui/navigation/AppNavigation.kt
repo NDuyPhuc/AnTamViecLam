@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -14,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.antamvieclam.ui.auth.HomeScreen
 import com.example.antamvieclam.ui.auth.LoginScreen
+import com.example.antamvieclam.ui.home.JobViewModel
 import com.example.antamvieclam.ui.job_details.JobDetailsScreen
 import com.example.antamvieclam.ui.main.MainScreen
 import com.example.antamvieclam.ui.management.ManagementScreen
@@ -85,7 +87,12 @@ fun RootNavigation() {
         }
         composable(Routes.CREATE_JOB_SCREEN) {
             CreateJobScreen(
-                onNavigateBack = {
+                onNavigateBack = { navController.popBackStack() },
+                onJobPostedSuccessfully = {
+                    // Khi đăng bài thành công, gửi tín hiệu về màn hình trước đó
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("new_job_created", true)
                     navController.popBackStack()
                 }
             )
@@ -99,7 +106,8 @@ fun BottomNavGraph(
     bottomNavController: NavHostController,
     onSignOut: () -> Unit,
     rootNavController: NavHostController,
-    paddingValues: PaddingValues // <-- Tham số này rất quan trọng
+    paddingValues: PaddingValues, // <-- Tham số này rất quan trọng
+    homeScreenReloadTrigger: Int
 ) {
     NavHost(
         navController = bottomNavController,
@@ -108,10 +116,23 @@ fun BottomNavGraph(
         modifier = Modifier.padding(paddingValues)
     ) {
         composable(BottomNavItem.Home.route) {
-            // KHÔNG cần truyền paddingValues vào HomeScreen nữa
+//            // Lấy viewModel tại đây để có thể gọi hàm của nó
+//            val jobViewModel: JobViewModel = hiltViewModel()
+//
+//            // Lắng nghe kết quả từ màn hình tạo job
+//            val newJobCreated = it.savedStateHandle.get<Boolean>("new_job_created")
+//            if (newJobCreated == true) {
+//                // Nếu có tín hiệu, gọi lại hàm tải dữ liệu và xóa tín hiệu đi
+//                jobViewModel.loadJobsForCurrentUser()
+//                it.savedStateHandle.remove<Boolean>("new_job_created")
+//            }
+
             HomeScreen(
                 onSignOut = onSignOut,
-                rootNavController = rootNavController
+                rootNavController = rootNavController,
+                // Truyền viewModel đã có sẵn vào
+//                jobViewModel = jobViewModel,
+                        reloadTrigger = homeScreenReloadTrigger
             )
         }
         composable(BottomNavItem.Management.route) {

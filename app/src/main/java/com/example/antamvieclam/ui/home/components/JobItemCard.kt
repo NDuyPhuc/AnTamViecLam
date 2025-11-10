@@ -55,6 +55,7 @@ fun JobItemCard(
             }
 
             Text(
+                // THAY ĐỔI CỐT LÕI NẰM Ở ĐÂY
                 text = "${job.payRate.toLong().formatCurrency()} VNĐ / ${job.payType.toVietnamese()}",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.primary,
@@ -74,6 +75,6 @@ fun PayType.toVietnamese(): String {
     return when (this) {
         PayType.PER_HOUR -> "giờ"
         PayType.PER_DAY -> "ngày"
-        PayType.PER_PACKAGE -> "gói"
+        PayType.PER_PACKAGE -> "tháng"
     }
 }

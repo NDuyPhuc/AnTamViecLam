@@ -40,6 +40,7 @@ import com.trackasia.android.maps.Style
 @Composable
 fun CreateJobScreen(
     onNavigateBack: () -> Unit,
+    onJobPostedSuccessfully: () -> Unit,
     viewModel: CreateJobViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -58,7 +59,7 @@ fun CreateJobScreen(
         when (val state = uiState) {
             is CreateJobState.Success -> {
                 Toast.makeText(context, "Đăng tin thành công!", Toast.LENGTH_SHORT).show()
-                onNavigateBack()
+                onJobPostedSuccessfully()
             }
             is CreateJobState.Error -> {
                 Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
@@ -167,7 +168,7 @@ fun PayType.toVietnamese(): String {
     return when (this) {
         PayType.PER_HOUR -> "Theo giờ"
         PayType.PER_DAY -> "Theo ngày"
-        PayType.PER_PACKAGE -> "Trọn gói"
+        PayType.PER_PACKAGE -> "Theo tháng"
     }
 }
 

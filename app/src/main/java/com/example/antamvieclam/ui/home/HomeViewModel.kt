@@ -33,7 +33,7 @@ class HomeViewModel @Inject constructor(
         loadCurrentUser()
     }
 
-    private fun loadCurrentUser() {
+    fun loadCurrentUser() {
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
             val userId = authRepository.getCurrentUserId()

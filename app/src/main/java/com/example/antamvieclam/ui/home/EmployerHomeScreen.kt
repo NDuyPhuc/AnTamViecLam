@@ -14,13 +14,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.antamvieclam.ui.home.components.JobItemCard
 
 // BỎ @OptIn và Scaffold
 @Composable
 fun EmployerHomeScreen(
     // BỎ tham số paddingValues
     onNavigateToJobDetails: (String) -> Unit,
-    jobViewModel: JobViewModel = hiltViewModel()
+    jobViewModel: JobViewModel
 ) {
     val jobState by jobViewModel.uiState.collectAsStateWithLifecycle()
 

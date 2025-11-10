@@ -25,7 +25,7 @@ sealed class ProfileUiState {
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val authRepository: AuthRepository // Để lấy uid và sđt
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Idle)
@@ -34,23 +34,33 @@ class ProfileViewModel @Inject constructor(
     fun saveUserProfile(fullName: String, userType: UserType, imageUri: Uri?) {
         _uiState.value = ProfileUiState.Loading
 
-        val currentFirebaseUser = FirebaseAuth.getInstance().currentUser
-        if (currentFirebaseUser == null) {
+        if (fullName.isBlank()) {
+            _uiState.value = ProfileUiState.Error("Vui lòng nhập họ và tên.")
+            return
+        }
+
+        val currentUserId = authRepository.getCurrentUserId()
+        if (currentUserId == null) {
             _uiState.value = ProfileUiState.Error("Người dùng chưa đăng nhập.")
             return
         }
 
-        val user = User(
-            uid = currentFirebaseUser.uid,
-            phoneNumber = currentFirebaseUser.phoneNumber ?: "",
-            fullName = fullName,
-            userType = userType
-        )
-
         viewModelScope.launch {
-            when (val result = userRepository.createUserProfile(user, imageUri)) {
-                is ProfileResult.Success -> _uiState.value = ProfileUiState.SaveSuccess
-                is ProfileResult.Error -> _uiState.value = ProfileUiState.Error(result.message)
+            val user = User(
+                uid = currentUserId,
+                phoneNumber = FirebaseAuth.getInstance().currentUser?.phoneNumber,
+                fullName = fullName,
+                userType = userType
+            )
+
+            val result = userRepository.createUserProfile(user, imageUri)
+            when (result) {
+                is ProfileResult.Success -> {
+                    _uiState.value = ProfileUiState.SaveSuccess
+                }
+                is ProfileResult.Error -> {
+                    _uiState.value = ProfileUiState.Error(result.message)
+                }
             }
         }
     }

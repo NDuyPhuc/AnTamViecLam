@@ -36,21 +36,27 @@ class AuthViewModel @Inject constructor(
                     // Đăng nhập thành công, giờ kiểm tra profile
                     val uid = authRepository.getCurrentUserId()
                     if (uid != null) {
+                        // Dùng userRepository để kiểm tra
                         val profileExists = userRepository.doesProfileExist(uid)
                         _uiState.value = AuthUiState.LoginSuccess(profileExists)
                     } else {
-                        // Trường hợp hiếm gặp
                         _uiState.value = AuthUiState.Error("Không lấy được thông tin người dùng.")
                     }
                 }
-                is AuthResult.Error -> _uiState.value = AuthUiState.Error(
-                    result.exception.localizedMessage ?: "Đăng nhập thất bại."
-                )
+                is AuthResult.Error -> {
+                    _uiState.value = AuthUiState.Error(
+                        result.exception.localizedMessage ?: "Đăng nhập thất bại."
+                    )
+                }
             }
         }
     }
 
     fun resetState() {
         _uiState.value = AuthUiState.Idle
+    }
+
+    fun signOut() {
+        authRepository.signOut()
     }
 }

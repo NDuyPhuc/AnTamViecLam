@@ -10,10 +10,10 @@ enum class UserType {
 
 data class User(
     val uid: String = "",
-    val phoneNumber: String = "",
+    val phoneNumber: String? = "",
     val userType: UserType = UserType.WORKER,
     val fullName: String = "",
-    val profileImageUrl: String? = null, // URL ảnh từ Cloudinary
+    var profileImageUrl: String? = null, // URL ảnh từ Cloudinary
     val address: String? = null,
     // Thêm các trường khác theo cấu trúc của bạn
     @ServerTimestamp

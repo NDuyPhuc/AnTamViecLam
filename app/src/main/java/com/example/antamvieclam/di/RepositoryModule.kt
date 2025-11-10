@@ -1,8 +1,10 @@
 package com.example.antamvieclam.di
 
 import com.example.antamvieclam.data.repository.AuthRepository
+import com.example.antamvieclam.data.repository.JobRepository
 import com.example.antamvieclam.data.repository.UserRepository
 import com.example.antamvieclam.data.repository.impl.AuthRepositoryImpl
+import com.example.antamvieclam.data.repository.impl.JobRepositoryImpl
 import com.example.antamvieclam.data.repository.impl.UserRepositoryImpl
 import dagger.Binds
 import dagger.Module
@@ -25,4 +27,10 @@ abstract class RepositoryModule {
     abstract fun bindUserRepository(
         userRepositoryImpl: UserRepositoryImpl
     ): UserRepository // Tương tự, yêu cầu UserRepository -> cung cấp UserRepositoryImpl
+
+    @Binds
+    @Singleton
+    abstract fun bindJobRepository(
+        jobRepositoryImpl: JobRepositoryImpl
+    ): JobRepository // Khi ai đó yêu cầu JobRepository, Hilt sẽ cung cấp JobRepositoryImpl
 }

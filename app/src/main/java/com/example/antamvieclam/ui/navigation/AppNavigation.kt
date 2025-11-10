@@ -1,29 +1,33 @@
+// app/src/main/java/com/example/antamvieclam/ui/navigation/AppNavigation.kt
+
 package com.example.antamvieclam.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.antamvieclam.ui.auth.HomeScreen
 import com.example.antamvieclam.ui.auth.LoginScreen
+import com.example.antamvieclam.ui.job_details.JobDetailsScreen
+import com.example.antamvieclam.ui.posting.CreateJobScreen
 import com.example.antamvieclam.ui.profile.CreateProfileScreen
 import com.google.firebase.auth.FirebaseAuth
 
-@Composable
-fun HomeScreen() {
-    androidx.compose.material3.Text("Welcome to Home Screen!")
-}
+// Xóa hàm HomeScreen() giả ở đây nếu có
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    // LẤY USER ĐĂNG NHẬP HIỆN TẠI
+
+    // SỬA LẠI LOGIC: Nếu đã đăng nhập, vào thẳng HOME_SCREEN
     val startDestination = if (FirebaseAuth.getInstance().currentUser != null) {
-        // Nếu đã đăng nhập, có thể nhảy thẳng vào Home hoặc màn hình chờ
-        // Tạm thời, chúng ta vẫn bắt đầu từ Login để test luồng
-        Routes.LOGIN_SCREEN
+        Routes.HOME_SCREEN
     } else {
         Routes.LOGIN_SCREEN
     }
+
     NavHost(
         navController = navController,
         startDestination = startDestination
@@ -53,8 +57,50 @@ fun AppNavigation() {
             )
         }
 
+        // SỬA LẠI HOÀN TOÀN KHỐI NÀY
         composable(Routes.HOME_SCREEN) {
-            HomeScreen()
+            HomeScreen(
+                navigateToLogin = {
+                    navController.navigate(Routes.LOGIN_SCREEN) {
+                        // Xóa hết back stack
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    }
+                },
+                // Đã thay thế TODO() bằng hành động điều hướng thật
+                navigateToCreateJob = {
+                    navController.navigate(Routes.CREATE_JOB_SCREEN)
+                },
+                // Đã thay thế TODO() bằng hành động điều hướng thật, có truyền tham số
+                navigateToJobDetails = { jobId ->
+                    // Tạo route cụ thể cho công việc được chọn, ví dụ: "job_details/abc-123"
+                    navController.navigate("${Routes.JOB_DETAILS_SCREEN}/$jobId")
+                }
+                // Không cần truyền viewModel vào đây vì HomeScreen sẽ tự lấy bằng hiltViewModel()
+            )
+        }
+
+        // THÊM COMPOSABLE CHO MÀN HÌNH TẠO VIỆC
+        composable(Routes.CREATE_JOB_SCREEN) {
+            CreateJobScreen(
+                onJobPosted = {
+                    // Sau khi đăng tin thành công, quay lại màn hình trước đó
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // THÊM COMPOSABLE CHO MÀN HÌNH CHI TIẾT CÔNG VIỆC
+        composable(
+            route = "${Routes.JOB_DETAILS_SCREEN}/{jobId}", // Định nghĩa route với tham số "jobId"
+            arguments = listOf(navArgument("jobId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            // Lấy jobId từ arguments
+            JobDetailsScreen(
+                jobId = backStackEntry.arguments?.getString("jobId"),
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

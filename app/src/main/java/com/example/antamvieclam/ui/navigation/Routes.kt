@@ -5,4 +5,6 @@ object Routes {
     const val OTP_SCREEN = "otp/{verificationId}" // Chúng ta cần truyền verificationId
     const val CREATE_PROFILE_SCREEN = "create_profile"
     const val HOME_SCREEN = "home" // Màn hình chính sau khi đăng nhập và có hồ sơ
+    const val CREATE_JOB_SCREEN = "create_job"
+    const val JOB_DETAILS_SCREEN = "job_details"
 }

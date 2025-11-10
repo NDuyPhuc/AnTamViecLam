@@ -35,6 +35,7 @@ android {
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+
         // Chỉ giữ lại dòng buildConfigField ở đây
         buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"$cloudName\"")
         buildConfigField("String", "CLOUDINARY_API_KEY", "\"$apiKey\"")
@@ -69,7 +70,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.navigation.compose)
-
+    implementation("androidx.compose.material:material-icons-extended:1.7.5")
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.coil.compose)
@@ -89,7 +90,18 @@ dependencies {
     // Thư viện cần thiết cho setContent
     implementation("androidx.activity:activity-compose:1.9.0") // Kiểm tra phiên bản mới nhất
 
-
+// TrackAsia Core SDK
+    implementation("io.github.track-asia:android-sdk:2.0.1")
+// TrackAsia Data Models
+    implementation("io.github.track-asia:android-sdk-geojson:2.0.1")
+    implementation("io.github.track-asia:android-sdk-turf:2.0.1")
+// TrackAsia Plugins
+    implementation("io.github.track-asia:android-plugin-annotation-v9:2.0.1")
+// TrackAsia Navigation
+    implementation("io.github.track-asia:libandroid-navigation:2.0.0")
+    implementation("io.github.track-asia:libandroid-navigation-ui:2.0.0")
+// Location Services
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
 // Phần này của bạn đã đúng, giữ nguyên
     implementation(libs.cloudinary.android)

@@ -33,37 +33,30 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Hồ Sơ Của Tôi") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+    // Bỏ Scaffold, chỉ giữ lại Box chứa nội dung
+    Box(
+        modifier = Modifier.fillMaxSize().padding(),
+        contentAlignment = Alignment.Center
+    ) {
+        when (val state = uiState) {
+            is ProfileUiState.Loading -> CircularProgressIndicator()
+            is ProfileUiState.Error -> Text(text = state.message)
+            // Sửa lại tên State cho khớp với code của bạn
+            is ProfileUiState.Success -> ProfileContent(
+                user = state.user,
+                onSignOut = {
+                    viewModel.signOut()
+                    onSignOut()
+                }
             )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center
-        ) {
-            when (val state = uiState) {
-                is ProfileUiState.Loading -> CircularProgressIndicator()
-                is ProfileUiState.Error -> Text(text = state.message)
-                is ProfileUiState.Success -> ProfileContent(
-                    user = state.user,
-                    onSignOut = {
-                        viewModel.signOut()
-                        onSignOut()
-                    }
-                )
-
-                is ProfileUiState.LoadSuccess -> TODO()
-                ProfileUiState.SaveSuccess -> TODO()
-            }
+            is ProfileUiState.LoadSuccess -> ProfileContent(
+                user = state.user,
+                onSignOut = {
+                    viewModel.signOut()
+                    onSignOut()
+                }
+            )
+            else -> {} // Bỏ qua các state khác
         }
     }
 }

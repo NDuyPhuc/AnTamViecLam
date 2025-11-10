@@ -22,40 +22,34 @@ import com.example.antamvieclam.data.model.JobApplication
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManagementScreen(
+    paddingValues: PaddingValues,
     viewModel: ManagementViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Quản Lý") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center
-        ) {
-            when (val state = uiState) {
-                is ManagementUiState.Loading -> CircularProgressIndicator()
-                is ManagementUiState.Error -> Text(text = state.message)
-                is ManagementUiState.Success -> {
-                    when (val data = state.data) {
-                        is ManagementData.WorkerData -> WorkerManagementContent(data.applications)
-                        is ManagementData.EmployerData -> EmployerManagementContent(data.postedJobs)
-                    }
+    // BỎ Scaffold, chỉ giữ lại nội dung bên trong
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            // ÁP DỤNG paddingValues từ Scaffold mẹ
+            .padding(paddingValues),
+        contentAlignment = Alignment.Center
+    ) {
+        when (val state = uiState) {
+            is ManagementUiState.Loading -> CircularProgressIndicator()
+            is ManagementUiState.Error -> Text(text = state.message)
+            is ManagementUiState.Success -> {
+                when (val data = state.data) {
+                    is ManagementData.WorkerData ->
+                        WorkerManagementContent(data.applications)
+                    is ManagementData.EmployerData ->
+                        EmployerManagementContent(data.postedJobs)
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun WorkerManagementContent(applications: List<JobApplication>) {

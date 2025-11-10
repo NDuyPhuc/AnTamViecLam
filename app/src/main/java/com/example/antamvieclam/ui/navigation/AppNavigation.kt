@@ -2,9 +2,10 @@
 
 package com.example.antamvieclam.ui.navigation
 
-import android.annotation.SuppressLint
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -16,6 +17,7 @@ import com.example.antamvieclam.ui.auth.LoginScreen
 import com.example.antamvieclam.ui.job_details.JobDetailsScreen
 import com.example.antamvieclam.ui.main.MainScreen
 import com.example.antamvieclam.ui.management.ManagementScreen
+import com.example.antamvieclam.ui.posting.CreateJobScreen
 import com.example.antamvieclam.ui.profile.CreateProfileScreen
 import com.example.antamvieclam.ui.profile.ProfileScreen
 import com.google.firebase.auth.FirebaseAuth
@@ -81,35 +83,43 @@ fun RootNavigation() {
                 }
             )
         }
+        composable(Routes.CREATE_JOB_SCREEN) {
+            CreateJobScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
 
 // Cấu trúc NavHost cho các màn hình BÊN TRONG Bottom Navigation Bar
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun BottomNavGraph(
-
     bottomNavController: NavHostController,
     onSignOut: () -> Unit,
-    rootNavController: NavHostController
+    rootNavController: NavHostController,
+    paddingValues: PaddingValues // <-- Tham số này rất quan trọng
 ) {
-    NavHost(bottomNavController, startDestination = BottomNavItem.Home.route) {
+    NavHost(
+        navController = bottomNavController,
+        startDestination = BottomNavItem.Home.route,
+        // ÁP DỤNG PADDING VÀO ĐÂY!
+        modifier = Modifier.padding(paddingValues)
+    ) {
         composable(BottomNavItem.Home.route) {
+            // KHÔNG cần truyền paddingValues vào HomeScreen nữa
             HomeScreen(
                 onSignOut = onSignOut,
-                navigateToCreateJob = {
-                    rootNavController.navigate(Routes.CREATE_JOB_SCREEN)
-                },
-                navigateToJobDetails = { jobId ->
-                    rootNavController.navigate("${Routes.JOB_DETAILS_SCREEN}/$jobId")
-                }
-                // XÓA các tham số thừa, bao gồm cả lỗi 'navigateToLogin' ở đây
+                rootNavController = rootNavController
             )
         }
         composable(BottomNavItem.Management.route) {
-            ManagementScreen()
+            // KHÔNG cần truyền paddingValues vào ManagementScreen nữa
+            ManagementScreen(PaddingValues())
         }
         composable(BottomNavItem.Profile.route) {
+            // KHÔNG cần truyền paddingValues vào ProfileScreen nữa
             ProfileScreen(onSignOut = onSignOut)
         }
     }

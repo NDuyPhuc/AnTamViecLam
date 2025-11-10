@@ -2,7 +2,10 @@
 
 package com.example.antamvieclam.ui.navigation
 
+import android.annotation.SuppressLint
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,31 +14,30 @@ import androidx.navigation.navArgument
 import com.example.antamvieclam.ui.auth.HomeScreen
 import com.example.antamvieclam.ui.auth.LoginScreen
 import com.example.antamvieclam.ui.job_details.JobDetailsScreen
-import com.example.antamvieclam.ui.posting.CreateJobScreen
+import com.example.antamvieclam.ui.main.MainScreen
+import com.example.antamvieclam.ui.management.ManagementScreen
 import com.example.antamvieclam.ui.profile.CreateProfileScreen
+import com.example.antamvieclam.ui.profile.ProfileScreen
 import com.google.firebase.auth.FirebaseAuth
 
-// Xóa hàm HomeScreen() giả ở đây nếu có
 
+// Cấu trúc NavHost chính của toàn bộ ứng dụng
 @Composable
-fun AppNavigation() {
+fun RootNavigation() {
+
     val navController = rememberNavController()
 
-    // SỬA LẠI LOGIC: Nếu đã đăng nhập, vào thẳng HOME_SCREEN
     val startDestination = if (FirebaseAuth.getInstance().currentUser != null) {
-        Routes.HOME_SCREEN
+        "main_screen"
     } else {
         Routes.LOGIN_SCREEN
     }
 
-    NavHost(
-        navController = navController,
-        startDestination = startDestination
-    ) {
+    NavHost(navController = navController, startDestination = startDestination) {
         composable(Routes.LOGIN_SCREEN) {
             LoginScreen(
                 navigateToHome = {
-                    navController.navigate(Routes.HOME_SCREEN) {
+                    navController.navigate("main_screen") {
                         popUpTo(Routes.LOGIN_SCREEN) { inclusive = true }
                     }
                 },
@@ -46,61 +48,69 @@ fun AppNavigation() {
                 }
             )
         }
-
         composable(Routes.CREATE_PROFILE_SCREEN) {
             CreateProfileScreen(
                 onProfileCreated = {
-                    navController.navigate(Routes.HOME_SCREEN) {
+                    navController.navigate("main_screen") {
                         popUpTo(Routes.CREATE_PROFILE_SCREEN) { inclusive = true }
                     }
                 }
             )
         }
-
-        // SỬA LẠI HOÀN TOÀN KHỐI NÀY
-        composable(Routes.HOME_SCREEN) {
-            HomeScreen(
-                navigateToLogin = {
+        composable("main_screen") {
+            MainScreen(
+                rootNavController = navController,
+                // THÊM MỚI: Định nghĩa hành động đăng xuất tại đây
+                onSignOut = {
                     navController.navigate(Routes.LOGIN_SCREEN) {
-                        // Xóa hết back stack
-                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                        popUpTo(0) // Xóa toàn bộ back stack
                     }
-                },
-                // Đã thay thế TODO() bằng hành động điều hướng thật
-                navigateToCreateJob = {
-                    navController.navigate(Routes.CREATE_JOB_SCREEN)
-                },
-                // Đã thay thế TODO() bằng hành động điều hướng thật, có truyền tham số
-                navigateToJobDetails = { jobId ->
-                    // Tạo route cụ thể cho công việc được chọn, ví dụ: "job_details/abc-123"
-                    navController.navigate("${Routes.JOB_DETAILS_SCREEN}/$jobId")
-                }
-                // Không cần truyền viewModel vào đây vì HomeScreen sẽ tự lấy bằng hiltViewModel()
-            )
-        }
-
-        // THÊM COMPOSABLE CHO MÀN HÌNH TẠO VIỆC
-        composable(Routes.CREATE_JOB_SCREEN) {
-            CreateJobScreen(
-                onJobPosted = {
-                    // Sau khi đăng tin thành công, quay lại màn hình trước đó
-                    navController.popBackStack()
                 }
             )
         }
-
-        // THÊM COMPOSABLE CHO MÀN HÌNH CHI TIẾT CÔNG VIỆC
+        // THÊM MỚI: Định nghĩa route cho màn hình chi tiết công việc
         composable(
-            route = "${Routes.JOB_DETAILS_SCREEN}/{jobId}", // Định nghĩa route với tham số "jobId"
+            route = "${Routes.JOB_DETAILS_SCREEN}/{jobId}",
             arguments = listOf(navArgument("jobId") { type = NavType.StringType })
         ) { backStackEntry ->
-            // Lấy jobId từ arguments
             JobDetailsScreen(
                 jobId = backStackEntry.arguments?.getString("jobId"),
+                // Hành động để quay lại màn hình trước đó
                 onNavigateBack = {
                     navController.popBackStack()
                 }
             )
+        }
+    }
+}
+
+// Cấu trúc NavHost cho các màn hình BÊN TRONG Bottom Navigation Bar
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun BottomNavGraph(
+
+    bottomNavController: NavHostController,
+    onSignOut: () -> Unit,
+    rootNavController: NavHostController
+) {
+    NavHost(bottomNavController, startDestination = BottomNavItem.Home.route) {
+        composable(BottomNavItem.Home.route) {
+            HomeScreen(
+                onSignOut = onSignOut,
+                navigateToCreateJob = {
+                    rootNavController.navigate(Routes.CREATE_JOB_SCREEN)
+                },
+                navigateToJobDetails = { jobId ->
+                    rootNavController.navigate("${Routes.JOB_DETAILS_SCREEN}/$jobId")
+                }
+                // XÓA các tham số thừa, bao gồm cả lỗi 'navigateToLogin' ở đây
+            )
+        }
+        composable(BottomNavItem.Management.route) {
+            ManagementScreen()
+        }
+        composable(BottomNavItem.Profile.route) {
+            ProfileScreen(onSignOut = onSignOut)
         }
     }
 }

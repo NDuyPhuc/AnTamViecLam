@@ -1,7 +1,9 @@
 // app/src/main/java/com/example/antamvieclam/ui/auth/HomeScreen.kt
+
 package com.example.antamvieclam.ui.auth
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -19,11 +21,11 @@ import com.example.antamvieclam.ui.home.WorkerHomeScreen
 
 @Composable
 fun HomeScreen(
-    // Các callback điều hướng cần thiết cho các màn hình con
-    navigateToLogin: () -> Unit,
+    // ĐÃ DỌN DẸP: Chỉ giữ lại các callback điều hướng cần thiết
+    onSignOut: () -> Unit,
     navigateToCreateJob: () -> Unit,
     navigateToJobDetails: (String) -> Unit,
-    // ViewModel để lấy thông tin user
+    // ViewModel được Hilt cung cấp tự động ngay tại đây
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
@@ -44,12 +46,14 @@ fun HomeScreen(
                     // Dựa vào userType để quyết định hiển thị màn hình nào
                     when (state.user.userType) {
                         UserType.EMPLOYER -> EmployerHomeScreen(
+                            // Sửa lại lời gọi cho khớp
                             navigateToCreateJob = navigateToCreateJob,
-                            navigateToLogin = navigateToLogin
+                            onSignOut = onSignOut
                         )
                         UserType.WORKER -> WorkerHomeScreen(
+                            // Sửa lại lời gọi cho khớp
                             navigateToJobDetails = navigateToJobDetails,
-                            navigateToLogin = navigateToLogin
+                            onSignOut = onSignOut
                         )
                     }
                 }

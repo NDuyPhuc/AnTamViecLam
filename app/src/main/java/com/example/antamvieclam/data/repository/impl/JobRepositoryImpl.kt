@@ -20,6 +20,21 @@ class JobRepositoryImpl @Inject constructor(
         private const val PAGE_SIZE = 10L
     }
 
+    override suspend fun getJobsByEmployer(employerId: String): Result<List<Job>> {
+        return try {
+            val querySnapshot = jobsCollection
+                .whereEqualTo("employerId", employerId)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .get()
+                .await()
+
+            val jobs = querySnapshot.toObjects(Job::class.java)
+            Result.success(jobs)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun postJob(job: Job): Result<Unit> {
         return try {
             // Tạo một document mới và lấy ID của nó
@@ -79,6 +94,19 @@ class JobRepositoryImpl @Inject constructor(
             )
             newApplicationRef.set(application).await()
             Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getApplicationsForWorker(workerId: String): Result<List<JobApplication>> {
+        return try {
+            val querySnapshot = applicationsCollection
+                .whereEqualTo("applicantId", workerId)
+                .orderBy("appliedAt", Query.Direction.DESCENDING)
+                .get()
+                .await()
+            Result.success(querySnapshot.toObjects(JobApplication::class.java))
         } catch (e: Exception) {
             Result.failure(e)
         }

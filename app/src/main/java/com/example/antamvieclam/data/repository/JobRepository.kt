@@ -2,6 +2,7 @@
 package com.example.antamvieclam.data.repository
 
 import com.example.antamvieclam.data.model.Job
+import com.example.antamvieclam.data.model.JobApplication
 import com.google.firebase.firestore.DocumentSnapshot
 
 interface JobRepository {
@@ -12,4 +13,7 @@ interface JobRepository {
     suspend fun getJobs(lastVisibleJob: DocumentSnapshot?): Result<Pair<List<Job>, DocumentSnapshot?>>
     suspend fun getJobDetails(jobId: String): Result<Job>
     suspend fun applyForJob(jobId: String, employerId: String, applicantId: String): Result<Unit>
+    suspend fun getJobsByEmployer(employerId: String): Result<List<Job>>
+    suspend fun getApplicationsForWorker(workerId: String): Result<List<JobApplication>>
+
 }

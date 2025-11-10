@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.antamvieclam.ui.navigation.AppNavigation // Import quan trọng
+import com.example.antamvieclam.ui.navigation.RootNavigation
 import com.example.antamvieclam.ui.theme.AnTamViecLamTheme
 import dagger.hilt.android.AndroidEntryPoint // Import quan trọng
 
@@ -16,7 +16,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AnTamViecLamTheme {
                 // GỌI AppNavigation() để bắt đầu luồng của ứng dụng
-                AppNavigation()
+                RootNavigation()
             }
         }
     }

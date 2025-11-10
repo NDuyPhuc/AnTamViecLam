@@ -4,16 +4,20 @@ package com.example.antamvieclam.ui.home
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.antamvieclam.data.model.Job
 import com.example.antamvieclam.ui.auth.AuthViewModel
 
@@ -21,9 +25,12 @@ import com.example.antamvieclam.ui.auth.AuthViewModel
 @Composable
 fun WorkerHomeScreen(
     navigateToJobDetails: (String) -> Unit,
-    navigateToLogin: () -> Unit,
-    authViewModel: AuthViewModel = hiltViewModel()
+    onSignOut: () -> Unit,
+    authViewModel: AuthViewModel = hiltViewModel(),
+    jobViewModel: JobViewModel = hiltViewModel()
 ) {
+    val jobState by jobViewModel.uiState.collectAsStateWithLifecycle()
+
     // Dữ liệu giả để hiển thị UI
     val jobs = remember {
         listOf(
@@ -40,7 +47,7 @@ fun WorkerHomeScreen(
                 actions = {
                     IconButton(onClick = {
                         authViewModel.signOut()
-                        navigateToLogin()
+                        onSignOut()
                     }) {
                         Icon(Icons.Default.Logout, contentDescription = "Đăng xuất")
                     }
@@ -53,13 +60,34 @@ fun WorkerHomeScreen(
             )
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center
         ) {
-            items(jobs.size) { index ->
-                JobItemCard(job = jobs[index], onJobClick = navigateToJobDetails)
+            when (val state = jobState) {
+                is JobListUiState.Loading -> {
+                    CircularProgressIndicator()
+                }
+                is JobListUiState.Error -> {
+                    Text(text = state.message)
+                }
+                is JobListUiState.Success -> {
+                    if (state.jobs.isEmpty()){
+                        Text(text = "Chưa có công việc nào được đăng.")
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(state.jobs) { job -> // SỬA Ở ĐÂY
+                                JobItemCard(job = job, onJobClick = navigateToJobDetails)
+                            }
+                        }
+                    }
+                }
             }
         }
     }

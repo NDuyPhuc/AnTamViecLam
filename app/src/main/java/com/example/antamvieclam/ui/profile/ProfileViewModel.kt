@@ -16,9 +16,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed class ProfileUiState {
-    object Idle : ProfileUiState()
+
     object Loading : ProfileUiState()
+    data class LoadSuccess(val user: User) : ProfileUiState()
     object SaveSuccess : ProfileUiState()
+
+    data class Success(val user: User) : ProfileUiState()
     data class Error(val message: String) : ProfileUiState()
 }
 
@@ -28,32 +31,54 @@ class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Idle)
+    private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    fun saveUserProfile(fullName: String, userType: UserType, imageUri: Uri?) {
-        _uiState.value = ProfileUiState.Loading
+    init {
+        loadUserProfile()
+    }
 
-        if (fullName.isBlank()) {
-            _uiState.value = ProfileUiState.Error("Vui lòng nhập họ và tên.")
-            return
-        }
-
-        val currentUserId = authRepository.getCurrentUserId()
-        if (currentUserId == null) {
-            _uiState.value = ProfileUiState.Error("Người dùng chưa đăng nhập.")
-            return
-        }
-
+    private fun loadUserProfile() {
         viewModelScope.launch {
-            val user = User(
+            _uiState.value = ProfileUiState.Loading
+            val userId = authRepository.getCurrentUserId()
+            if (userId == null) {
+                _uiState.value = ProfileUiState.Error("Không thể xác thực người dùng.")
+                return@launch
+            }
+
+            val user = userRepository.getUserProfile(userId)
+            if (user != null) {
+                _uiState.value = ProfileUiState.Success(user)
+            } else {
+                _uiState.value = ProfileUiState.Error("Không tìm thấy hồ sơ người dùng.")
+            }
+        }
+    }
+
+    fun saveUserProfile(fullName: String, userType: UserType, imageUri: Uri?) {
+        viewModelScope.launch {
+            _uiState.value = ProfileUiState.Loading
+            if (fullName.isBlank()) {
+                _uiState.value = ProfileUiState.Error("Vui lòng nhập họ và tên.")
+                return@launch
+            }
+            val currentUserId = authRepository.getCurrentUserId()
+            if (currentUserId == null) {
+                _uiState.value = ProfileUiState.Error("Người dùng chưa đăng nhập.")
+                return@launch
+            }
+
+            // Tạo đối tượng User mới
+            val newUser = User(
                 uid = currentUserId,
-                phoneNumber = FirebaseAuth.getInstance().currentUser?.phoneNumber,
                 fullName = fullName,
-                userType = userType
+                userType = userType,
+                phoneNumber = FirebaseAuth.getInstance().currentUser?.phoneNumber
             )
 
-            val result = userRepository.createUserProfile(user, imageUri)
+            // Gọi repository để tạo profile
+            val result = userRepository.createUserProfile(newUser, imageUri)
             when (result) {
                 is ProfileResult.Success -> {
                     _uiState.value = ProfileUiState.SaveSuccess
@@ -63,5 +88,9 @@ class ProfileViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun signOut() {
+        authRepository.signOut()
     }
 }
